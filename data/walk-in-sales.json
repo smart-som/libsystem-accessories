@@ -1,0 +1,121 @@
+{
+  "sales": [
+    {
+      "id": "walk-1783680428682",
+      "receiptNumber": "WK-260710003",
+      "recordedBy": "libsystem-admin",
+      "customerName": "John Boil",
+      "customerPhone": "07023456777",
+      "paymentMethod": "cash",
+      "soldAt": "2026-07-10T10:47:08.682Z",
+      "subtotal": 152000,
+      "total": 152000,
+      "items": [
+        {
+          "id": "walk-item-1783680428682-1",
+          "productId": "prod-powerbank",
+          "productName": "Oraimo Travel Powerbank 20000mAh",
+          "variantId": "var-powerbank-blue",
+          "variantName": "Blue",
+          "quantity": 2,
+          "unitPrice": 37000,
+          "unitCost": 24500
+        },
+        {
+          "id": "walk-item-1783680428682-2",
+          "productId": "prod-powerbank",
+          "productName": "Oraimo Travel Powerbank 20000mAh",
+          "variantId": "var-powerbank-black",
+          "variantName": "Black",
+          "quantity": 1,
+          "unitPrice": 36000,
+          "unitCost": 24000
+        },
+        {
+          "id": "walk-item-1783680428682-3",
+          "productId": "prod-headset",
+          "productName": "Havit RGB Gaming Headset",
+          "variantId": "var-headset-black",
+          "variantName": "Black",
+          "quantity": 1,
+          "unitPrice": 42000,
+          "unitCost": 28000
+        }
+      ]
+    },
+    {
+      "id": "walk-1",
+      "receiptNumber": "WK-240501",
+      "recordedBy": "profile-staff-1",
+      "customerName": "Amina Bello",
+      "customerPhone": "+234 812 220 1122",
+      "paymentMethod": "cash",
+      "soldAt": "2026-05-01T13:10:00.000Z",
+      "subtotal": 73000,
+      "total": 73000,
+      "items": [
+        {
+          "id": "walk-item-1",
+          "productId": "prod-kettle",
+          "productName": "Binatone Smart Electric Kettle",
+          "variantId": "var-kettle-silver",
+          "variantName": "Silver",
+          "quantity": 1,
+          "unitPrice": 31500,
+          "unitCost": 21000
+        },
+        {
+          "id": "walk-item-2",
+          "productId": "prod-powerbank",
+          "productName": "Oraimo Travel Powerbank 20000mAh",
+          "variantId": "var-powerbank-blue",
+          "variantName": "Blue",
+          "quantity": 1,
+          "unitPrice": 37000,
+          "unitCost": 24500
+        },
+        {
+          "id": "walk-item-3",
+          "productId": "prod-controller",
+          "productName": "Havit Wireless Controller Pro",
+          "variantId": "var-controller-blue",
+          "variantName": "Blue",
+          "quantity": 1,
+          "unitPrice": 4500,
+          "unitCost": 3000
+        }
+      ]
+    },
+    {
+      "id": "walk-2",
+      "receiptNumber": "WK-240504",
+      "recordedBy": "profile-staff-1",
+      "paymentMethod": "pos",
+      "soldAt": "2026-05-04T11:45:00.000Z",
+      "subtotal": 114000,
+      "total": 114000,
+      "items": [
+        {
+          "id": "walk-item-4",
+          "productId": "prod-headset",
+          "productName": "Havit RGB Gaming Headset",
+          "variantId": "var-headset-black",
+          "variantName": "Black",
+          "quantity": 2,
+          "unitPrice": 42000,
+          "unitCost": 28000
+        },
+        {
+          "id": "walk-item-5",
+          "productId": "prod-powerbank",
+          "productName": "Oraimo Travel Powerbank 20000mAh",
+          "variantId": "var-powerbank-black",
+          "variantName": "Black",
+          "quantity": 1,
+          "unitPrice": 30000,
+          "unitCost": 22000
+        }
+      ]
+    }
+  ]
+}

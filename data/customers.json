@@ -1,0 +1,13 @@
+{
+  "customers": [
+    {
+      "id": "c173c7a7-1002-48bd-a69d-40e8a656d35a",
+      "email": "fmba31@gmail.com",
+      "fullName": "Samson Ojukwu-Mba",
+      "phone": "+234 803 000 0003",
+      "passwordHash": "8Kzi7X-ItoktyEJVLOQxxOTywDjN96J5dEm9FhEEXgU",
+      "createdAt": "2026-07-10T09:46:36.357Z",
+      "updatedAt": "2026-07-10T09:46:36.357Z"
+    }
+  ]
+}
