@@ -15,13 +15,13 @@ export default async function RegisterPage() {
     redirect("/admin");
   }
 
-  const provider = isFirebaseConfigured && isFirebaseAdminConfigured ? "firebase" : "local";
+  const isEnabled = isFirebaseConfigured && isFirebaseAdminConfigured;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
       <AuthCard
         mode="register"
-        provider={provider}
+        isEnabled={isEnabled}
         title="Create your account"
         description="Register to save addresses, check order status, and keep your favorite accessories in one place."
         submitLabel="Create account"

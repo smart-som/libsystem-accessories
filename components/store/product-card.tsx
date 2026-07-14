@@ -18,6 +18,7 @@ export function ProductCard({ product }: { product: Product }) {
           src={product.images[0].url}
           alt={product.images[0].alt}
           fill
+          sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute left-4 top-4 flex items-center gap-2">

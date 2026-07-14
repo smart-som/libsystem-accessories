@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 
 import { AdminLoginCard } from "@/components/admin/admin-login-card";
 import { buttonVariants } from "@/components/ui/button";
-import { getAdminLoginPreview, isAdminLoginEnabled } from "@/lib/admin-auth";
 import { getSessionContext } from "@/lib/auth";
+import { isFirebaseAdminConfigured, isFirebaseConfigured } from "@/lib/env";
 import { cn } from "@/lib/utils";
 
 export default async function AdminLoginPage() {
@@ -26,7 +26,7 @@ export default async function AdminLoginPage() {
         </Link>
       </div>
 
-      <AdminLoginCard credentialsPreview={getAdminLoginPreview()} isEnabled={isAdminLoginEnabled()} />
+      <AdminLoginCard isEnabled={isFirebaseConfigured && isFirebaseAdminConfigured} />
     </div>
   );
 }

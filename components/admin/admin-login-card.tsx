@@ -2,20 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getFirebaseBrowserAuth } from "@/lib/firebase/client";
 
 type AdminLoginCardProps = {
-  credentialsPreview: {
-    email: string;
-    password: string;
-  } | null;
   isEnabled: boolean;
 };
 
-export function AdminLoginCard({ credentialsPreview, isEnabled }: AdminLoginCardProps) {
+export function AdminLoginCard({ isEnabled }: AdminLoginCardProps) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,21 +24,12 @@ export function AdminLoginCard({ credentialsPreview, isEnabled }: AdminLoginCard
       <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admin access</p>
       <h1 className="mt-4 font-display text-4xl font-semibold text-slate-900">Sign in to the dashboard</h1>
       <p className="mt-4 text-sm leading-7 text-slate-600">
-        Use the admin credentials below to open the store dashboard, manage products, and review orders.
+        Sign in with an authorized Firebase admin account to manage products, orders, staff, and sales.
       </p>
-
-      {credentialsPreview ? (
-        <div className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-          <p className="font-semibold">Default admin credentials</p>
-          <p className="mt-2">Email: {credentialsPreview.email}</p>
-          <p>Password: {credentialsPreview.password}</p>
-          <p className="mt-3 text-amber-800">Change these with `ADMIN_LOGIN_EMAIL`, `ADMIN_LOGIN_PASSWORD`, and `ADMIN_SESSION_SECRET` before production use.</p>
-        </div>
-      ) : null}
 
       {!isEnabled ? (
         <div className="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700">
-          Admin login is disabled because secure credentials have not been configured for this environment.
+          Admin login is disabled until Firebase Admin credentials are configured on the server.
         </div>
       ) : (
         <form
@@ -53,17 +43,26 @@ export function AdminLoginCard({ credentialsPreview, isEnabled }: AdminLoginCard
               const formData = new FormData(event.currentTarget);
               const email = String(formData.get("email") ?? "").trim();
               const password = String(formData.get("password") ?? "");
-              const response = await fetch("/api/auth/admin-login", {
+              const auth = getFirebaseBrowserAuth();
+
+              if (!auth) {
+                throw new Error("Firebase Auth is not configured.");
+              }
+
+              const credential = await signInWithEmailAndPassword(auth, email, password);
+              const idToken = await credential.user.getIdToken(true);
+              const response = await fetch("/api/auth/session", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ idToken, requestedRole: "admin" }),
               });
 
               const body = (await response.json().catch(() => null)) as { message?: string } | null;
 
               if (!response.ok) {
+                await signOut(auth).catch(() => undefined);
                 throw new Error(body?.message ?? "We could not sign you in to the admin dashboard.");
               }
 
@@ -78,7 +77,11 @@ export function AdminLoginCard({ credentialsPreview, isEnabled }: AdminLoginCard
         >
           <Input name="email" type="email" placeholder="Admin email address" autoComplete="username" required />
           <Input name="password" type="password" placeholder="Password" autoComplete="current-password" required />
-          {message ? <p className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{message}</p> : null}
+          {message ? (
+            <Alert tone="error" title="Admin sign-in failed" onDismiss={() => setMessage("")}>
+              {message}
+            </Alert>
+          ) : null}
           <Button className="w-full" disabled={isSubmitting || !isEnabled}>
             {isSubmitting ? "Signing in..." : "Open admin dashboard"}
           </Button>

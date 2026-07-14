@@ -12,6 +12,7 @@ function getFirebaseConfig() {
     storageBucket: env.firebaseStorageBucket!,
     messagingSenderId: env.firebaseMessagingSenderId!,
     appId: env.firebaseAppId!,
+    measurementId: env.firebaseMeasurementId,
   };
 }
 

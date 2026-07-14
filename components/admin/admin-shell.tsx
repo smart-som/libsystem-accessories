@@ -65,6 +65,7 @@ export function AdminShell({
   const pathname = usePathname();
   const [activeUtilityPanel, setActiveUtilityPanel] = useState<"notifications" | "help" | "settings" | null>(null);
   const [readNotificationOrderIds, setReadNotificationOrderIds] = useState<string[]>([]);
+  const [notificationReferenceTime, setNotificationReferenceTime] = useState<number | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -103,7 +104,7 @@ export function AdminShell({
     },
     {
       title: "Customer login",
-      body: "Customers can now sign in from /login with the demo customer account in local mode, or register a simple local customer account for testing.",
+      body: "Customers sign in and register through Firebase Authentication. Their account profile is stored in Firestore.",
     },
     {
       title: "Inventory rule",
@@ -116,12 +117,14 @@ export function AdminShell({
   }, [theme]);
 
   useEffect(() => {
-    setReadNotificationOrderIds(readAdminNotificationOrderIds());
-
     const syncReadIds = () => {
       setReadNotificationOrderIds(readAdminNotificationOrderIds());
     };
 
+    queueMicrotask(() => {
+      syncReadIds();
+      setNotificationReferenceTime(Date.now());
+    });
     window.addEventListener("storage", syncReadIds);
     window.addEventListener(ADMIN_NOTIFICATIONS_CHANGED_EVENT, syncReadIds as EventListener);
 
@@ -131,18 +134,15 @@ export function AdminShell({
     };
   }, []);
 
-  useEffect(() => {
-    if (activeUtilityPanel !== "notifications" || !recentOrders.length) {
-      return;
-    }
-
-    setReadNotificationOrderIds(markAdminNotificationsRead(recentOrders.map((order) => order.id)));
-  }, [activeUtilityPanel, recentOrders]);
-
   const closeUtilityPanel = () => setActiveUtilityPanel(null);
 
   const toggleUtilityPanel = (panel: "notifications" | "help" | "settings") => {
-    setActiveUtilityPanel((current) => (current === panel ? null : panel));
+    const nextPanel = activeUtilityPanel === panel ? null : panel;
+    setActiveUtilityPanel(nextPanel);
+
+    if (nextPanel === "notifications" && recentOrders.length) {
+      setReadNotificationOrderIds(markAdminNotificationsRead(recentOrders.map((order) => order.id)));
+    }
   };
 
   const sidebarLinks = navItems.map((item) => ({
@@ -318,7 +318,9 @@ export function AdminShell({
                       Orders placed within the last 24 hours show a count badge here, and the latest orders appear first.
                     </p>
                     {recentOrders.map((order) => {
-                      const isRecent = Date.now() - new Date(order.placedAt).getTime() <= 1000 * 60 * 60 * 24;
+                      const isRecent =
+                        notificationReferenceTime !== null &&
+                        notificationReferenceTime - new Date(order.placedAt).getTime() <= 1000 * 60 * 60 * 24;
                       const isUnread = !readNotificationOrderIds.includes(order.id);
 
                       return (

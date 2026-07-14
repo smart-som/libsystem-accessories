@@ -5,6 +5,37 @@ import { isFirebaseConfigured } from "@/lib/env";
 import { readOrdersSnapshot } from "@/lib/order-store";
 import { readWalkInSalesSnapshot } from "@/lib/walk-in-sales-store";
 
+function getActiveProducts(products: ReturnType<typeof readCatalogSnapshot>["products"]) {
+  return products.filter((product) => product.status === "active");
+}
+
+function buildBestSellers(orders: ReturnType<typeof readOrdersSnapshot>["orders"], walkInSales: ReturnType<typeof readWalkInSalesSnapshot>["sales"]) {
+  const totals = new Map<string, { name: string; unitsSold: number }>();
+
+  for (const order of orders) {
+    for (const item of order.items) {
+      const current = totals.get(item.productId) ?? { name: item.productName, unitsSold: 0 };
+      current.unitsSold += item.quantity;
+      totals.set(item.productId, current);
+    }
+  }
+
+  for (const sale of walkInSales) {
+    for (const item of sale.items) {
+      const current = totals.get(item.productId) ?? { name: item.productName, unitsSold: 0 };
+      current.unitsSold += item.quantity;
+      totals.set(item.productId, current);
+    }
+  }
+
+  return [...totals.values()].sort((a, b) => b.unitsSold - a.unitsSold).slice(0, 4);
+}
+
+export function getNavigationCatalog() {
+  const snapshot = readCatalogSnapshot();
+  return { categories: snapshot.categories, products: getActiveProducts(snapshot.products) };
+}
+
 export function getCategories() {
   return readCatalogSnapshot().categories;
 }
@@ -14,7 +45,7 @@ export function getBrands() {
 }
 
 export function getProducts() {
-  return readCatalogSnapshot().products.filter((product) => product.status === "active");
+  return getActiveProducts(readCatalogSnapshot().products);
 }
 
 export function getAdminProducts() {
@@ -56,27 +87,9 @@ export function getCustomerOrders(customerEmail: string) {
 }
 
 export function getBestSellerProducts() {
-  const totals = new Map<string, { name: string; unitsSold: number }>();
   const orders = getOrders();
   const walkInSales = getWalkInSales();
-
-  for (const order of orders) {
-    for (const item of order.items) {
-      const current = totals.get(item.productId) ?? { name: item.productName, unitsSold: 0 };
-      current.unitsSold += item.quantity;
-      totals.set(item.productId, current);
-    }
-  }
-
-  for (const sale of walkInSales) {
-    for (const item of sale.items) {
-      const current = totals.get(item.productId) ?? { name: item.productName, unitsSold: 0 };
-      current.unitsSold += item.quantity;
-      totals.set(item.productId, current);
-    }
-  }
-
-  return [...totals.values()].sort((a, b) => b.unitsSold - a.unitsSold).slice(0, 4);
+  return buildBestSellers(orders, walkInSales);
 }
 
 export function getInventoryStatus() {
@@ -99,18 +112,19 @@ export function getStoreContext() {
   const snapshot = readCatalogSnapshot();
   const orders = getOrders();
   const walkInSales = getWalkInSales();
+  const products = getActiveProducts(snapshot.products);
 
   return {
     isDemoMode: !isFirebaseConfigured,
     categories: snapshot.categories,
     brands: snapshot.brands,
-    products: getProducts(),
-    featuredProducts: getFeaturedProducts(),
-    bestSellers: getBestSellerProducts(),
+    products,
+    featuredProducts: products.filter((product) => product.featured),
+    bestSellers: buildBestSellers(orders, walkInSales),
     shippingZones,
     orders,
     walkInSales,
-    dashboard: getDashboardData(),
+    dashboard: buildDashboardSnapshot({ products: snapshot.products, orders, walkInSales }),
     profiles,
   };
 }

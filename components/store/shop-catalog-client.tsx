@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, SlidersHorizontal } from "lucide-react";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 
 import { ProductCard } from "@/components/store/product-card";
 import { Card } from "@/components/ui/card";
@@ -29,13 +29,6 @@ export function ShopCatalogClient({
   const [brand, setBrand] = useState("all");
   const [price, setPrice] = useState("all");
   const deferredSearch = useDeferredValue(search);
-
-  useEffect(() => {
-    setSearch(initialSearch);
-    setCategory(initialCategory);
-    setBrand("all");
-    setPrice("all");
-  }, [initialCategory, initialSearch]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {

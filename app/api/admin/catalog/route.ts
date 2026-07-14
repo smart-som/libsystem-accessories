@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { randomUUID } from "crypto";
+import path from "path";
 
 import { NextResponse } from "next/server";
 
@@ -30,6 +30,39 @@ function sanitizeFileName(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9.-]+/g, "-");
 }
 
+const MAX_PRODUCT_IMAGES = 8;
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const allowedImageTypes = new Map([
+  ["image/jpeg", ".jpg"],
+  ["image/png", ".png"],
+  ["image/webp", ".webp"],
+]);
+
+function validateImageUrl(value: unknown) {
+  if (typeof value !== "string") {
+    throw new Error("Every product image URL must be text.");
+  }
+
+  const trimmed = value.trim();
+
+  if (trimmed.startsWith("/uploads/products/")) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed);
+
+    if (url.protocol !== "https:" || url.hostname !== "images.unsplash.com") {
+      throw new Error("Remote product images must use HTTPS URLs from images.unsplash.com.");
+    }
+
+    return url.toString();
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Remote product images")) throw error;
+    throw new Error("Enter a valid product image URL or upload an image.");
+  }
+}
+
 async function saveUploadedPictures(files: File[], productName: string) {
   const uploadDirectory = path.join(process.cwd(), "public", "uploads", "products");
   await mkdir(uploadDirectory, { recursive: true });
@@ -41,7 +74,16 @@ async function saveUploadedPictures(files: File[], productName: string) {
       continue;
     }
 
-    const extension = path.extname(file.name) || ".jpg";
+    const extension = allowedImageTypes.get(file.type);
+
+    if (!extension) {
+      throw new Error("Product pictures must be JPEG, PNG, or WebP images.");
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      throw new Error("Each product picture must be 5 MB or smaller.");
+    }
+
     const fileName = `${sanitizeFileName(productName)}-${randomUUID().slice(0, 8)}${extension}`;
     const filePath = path.join(uploadDirectory, fileName);
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -83,7 +125,13 @@ export async function POST(request: Request) {
     const variantName = parseString(formData.get("variantName"), "Variant label");
     const productId = String(formData.get("productId") ?? "").trim();
     const rawImageUrls = String(formData.get("imageUrls") ?? "[]");
-    const imageUrls = JSON.parse(rawImageUrls) as string[];
+    const parsedImageUrls: unknown = JSON.parse(rawImageUrls);
+
+    if (!Array.isArray(parsedImageUrls)) {
+      throw new Error("Product image URLs must be a list.");
+    }
+
+    const imageUrls = parsedImageUrls.map(validateImageUrl);
     const uploadFiles = formData
       .getAll("pictures")
       .filter((entry): entry is File => entry instanceof File && entry.size > 0);
@@ -94,6 +142,10 @@ export async function POST(request: Request) {
 
     const uploadedImageUrls = await saveUploadedPictures(uploadFiles, name);
     const allImageUrls = [...new Set([...imageUrls, ...uploadedImageUrls])];
+
+    if (allImageUrls.length > MAX_PRODUCT_IMAGES) {
+      throw new Error(`Add no more than ${MAX_PRODUCT_IMAGES} product pictures.`);
+    }
 
     if (!allImageUrls.length) {
       throw new Error("Add at least one product picture.");

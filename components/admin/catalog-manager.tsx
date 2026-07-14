@@ -6,7 +6,9 @@ import { PencilLine, PlusCircle, Save, Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format";
@@ -125,6 +127,7 @@ export function CatalogManager({
   const [isSavingCategory, setIsSavingCategory] = useState(false);
   const [isSavingBrand, setIsSavingBrand] = useState(false);
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const [productPendingDeletion, setProductPendingDeletion] = useState<Product | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const composerRef = useRef<HTMLDivElement | null>(null);
@@ -241,10 +244,6 @@ export function CatalogManager({
       return;
     }
 
-    if (!window.confirm(`Delete ${product.name}? This cannot be undone.`)) {
-      return;
-    }
-
     setMessage(null);
     setDeletingProductId(product.id);
 
@@ -274,6 +273,7 @@ export function CatalogManager({
       });
     } finally {
       setDeletingProductId(null);
+      setProductPendingDeletion(null);
     }
   };
 
@@ -372,15 +372,9 @@ export function CatalogManager({
   return (
     <div className="space-y-6">
       {message ? (
-        <div
-          className={`border px-4 py-3 text-sm ${
-            message.tone === "success"
-              ? "border-[color:var(--admin-border)] bg-[var(--admin-panel-2)] text-[var(--admin-text)]"
-              : "border-[color:var(--admin-border)] bg-[var(--admin-panel-2)] text-[var(--admin-text)]"
-          }`}
-        >
+        <Alert tone={message.tone} title={message.tone === "success" ? "Action completed" : "Action failed"} onDismiss={() => setMessage(null)}>
           {message.text}
-        </div>
+        </Alert>
       ) : null}
 
       <Card className="border-[color:var(--admin-border)] bg-[var(--admin-panel)] text-[var(--admin-text)] shadow-[var(--admin-shadow)] rounded-none">
@@ -447,7 +441,7 @@ export function CatalogManager({
                           size="sm"
                           variant="ghost"
                           disabled={stock > 0 || isDeleting}
-                          onClick={() => void handleDeleteProduct(product)}
+                          onClick={() => setProductPendingDeletion(product)}
                           className="rounded-none text-[var(--admin-muted)] hover:bg-[var(--admin-panel-2)] hover:text-[var(--admin-text)]"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -715,6 +709,19 @@ export function CatalogManager({
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(productPendingDeletion)}
+        tone="danger"
+        title={`Delete ${productPendingDeletion?.name ?? "this product"}?`}
+        description="This permanently removes the product from the catalog and cannot be undone. Only products with zero stock can be deleted."
+        confirmLabel="Delete product"
+        isBusy={Boolean(productPendingDeletion && deletingProductId === productPendingDeletion.id)}
+        onCancel={() => setProductPendingDeletion(null)}
+        onConfirm={() => {
+          if (productPendingDeletion) void handleDeleteProduct(productPendingDeletion);
+        }}
+      />
     </div>
   );
 }

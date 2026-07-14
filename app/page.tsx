@@ -47,6 +47,8 @@ export default function HomePage() {
                     src={heroSpotlight.images[0].url}
                     alt={heroSpotlight.images[0].alt}
                     fill
+                    loading="eager"
+                    sizes="(min-width: 1024px) 56vw, 100vw"
                     className="object-cover transition duration-500 group-hover:scale-[1.02]"
                   />
                 </div>

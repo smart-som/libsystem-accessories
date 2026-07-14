@@ -1,10 +1,8 @@
 import { cookies } from "next/headers";
 
-import { readAdminSessionToken } from "@/lib/admin-auth";
-import { readCustomerSessionToken } from "@/lib/customer-auth";
 import { getFirebaseAdminAuth, getFirebaseAdminFirestore } from "@/lib/firebase/admin";
 import { firestoreCollections } from "@/lib/firebase/firestore";
-import { ADMIN_SESSION_COOKIE_NAME, CUSTOMER_SESSION_COOKIE_NAME, FIREBASE_SESSION_COOKIE_NAME } from "@/lib/session-cookies";
+import { FIREBASE_SESSION_COOKIE_NAME } from "@/lib/session-cookies";
 import type { UserRole } from "@/lib/types";
 
 type SessionUser = {
@@ -21,41 +19,13 @@ function getRoleFromClaims(claims: Record<string, unknown>): UserRole {
 
 export async function getSessionContext() {
   const cookieStore = await cookies();
-  const adminSessionCookie = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value;
-
-  if (adminSessionCookie) {
-    const adminSession = readAdminSessionToken(adminSessionCookie);
-
-    if (adminSession) {
-      return {
-        user: adminSession.user,
-        role: adminSession.role,
-        isDemo: false,
-      };
-    }
-  }
-
-  const customerSessionCookie = cookieStore.get(CUSTOMER_SESSION_COOKIE_NAME)?.value;
-
-  if (customerSessionCookie) {
-    const customerSession = readCustomerSessionToken(customerSessionCookie);
-
-    if (customerSession) {
-      return {
-        user: customerSession.user,
-        role: customerSession.role,
-        isDemo: true,
-      };
-    }
-  }
-
   const auth = getFirebaseAdminAuth();
 
   if (!auth) {
     return {
       user: null,
       role: "customer" as UserRole,
-      isDemo: true,
+      isDemo: false,
     };
   }
 

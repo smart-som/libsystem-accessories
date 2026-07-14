@@ -36,21 +36,16 @@ export function SiteHeader({
 }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [accountHref, setAccountHref] = useState(initialAccountHref);
-  const [accountLabel, setAccountLabel] = useState(initialAccountLabel);
-  const [resolvedIsAuthenticated, setResolvedIsAuthenticated] = useState(isAuthenticated);
+  const [firebaseIsAuthenticated, setFirebaseIsAuthenticated] = useState<boolean | null>(null);
+  const resolvedIsAuthenticated = firebaseIsAuthenticated ?? isAuthenticated;
+  const accountHref = firebaseIsAuthenticated === null ? initialAccountHref : firebaseIsAuthenticated ? "/account" : "/login";
+  const accountLabel = firebaseIsAuthenticated === null ? initialAccountLabel : firebaseIsAuthenticated ? "My account" : "Sign in";
   const { totalItems } = useCart();
   const categoryLinks = categories.map((category) => ({
     href: `/shop?category=${category.slug}`,
     label: getCategoryLabel(category.name),
   }));
   const secondaryAccountLink = accountNavLinks.find((item) => item.href !== accountHref);
-
-  useEffect(() => {
-    setAccountHref(initialAccountHref);
-    setAccountLabel(initialAccountLabel);
-    setResolvedIsAuthenticated(isAuthenticated);
-  }, [initialAccountHref, initialAccountLabel, isAuthenticated]);
 
   useEffect(() => {
     if (!syncWithFirebaseAuth) {
@@ -71,16 +66,12 @@ export function SiteHeader({
       }
 
       const isLoggedIn = Boolean(auth.currentUser);
-      setAccountHref(isLoggedIn ? "/account" : "/login");
-      setAccountLabel(isLoggedIn ? "My account" : "Sign in");
-      setResolvedIsAuthenticated(isLoggedIn);
+      setFirebaseIsAuthenticated(isLoggedIn);
     });
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       const isLoggedIn = Boolean(user);
-      setAccountHref(isLoggedIn ? "/account" : "/login");
-      setAccountLabel(isLoggedIn ? "My account" : "Sign in");
-      setResolvedIsAuthenticated(isLoggedIn);
+      setFirebaseIsAuthenticated(isLoggedIn);
     });
 
     return () => {
@@ -96,7 +87,7 @@ export function SiteHeader({
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
           <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <Image src="/libsystem-logo.jpeg" alt="Libsystem Accessories logo" fill className="object-cover" />
+            <Image src="/libsystem-logo.jpeg" alt="Libsystem Accessories logo" fill sizes="48px" className="object-cover" />
           </div>
           <div>
             <div className="font-display text-xl font-bold tracking-tight text-slate-900">Libsystem</div>
