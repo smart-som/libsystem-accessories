@@ -249,7 +249,7 @@
             "color": "Graphite",
             "layout": "US"
           },
-          "stockQuantity": 4,
+          "stockQuantity": 3,
           "price": 125000,
           "costPrice": 86000
         }
@@ -372,7 +372,7 @@
           "attributes": {
             "color": "Black"
           },
-          "stockQuantity": 17,
+          "stockQuantity": 16,
           "price": 42000,
           "costPrice": 28000
         }

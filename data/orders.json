@@ -1,6 +1,48 @@
 {
   "orders": [
     {
+      "id": "order-1784020463689",
+      "orderNumber": "LS-260714006",
+      "customerName": "Samson Ojukwu-Mba",
+      "customerEmail": "fmba31@gmail.com",
+      "customerPhone": "+2347031349246",
+      "status": "paid",
+      "channel": "online",
+      "paymentMethod": "card",
+      "paymentReference": "DEMO-1784020463690",
+      "fulfillmentMethod": "delivery",
+      "shippingZoneId": "zone-lagos",
+      "shippingAddress": "25 Ishola Bello",
+      "subtotal": 167000,
+      "shippingFee": 3500,
+      "total": 170500,
+      "placedAt": "2026-07-14T09:14:23.689Z",
+      "items": [
+        {
+          "id": "order-item-1784020463689-1",
+          "productId": "prod-keyboard",
+          "productName": "Logitech MX Mechanical Mini",
+          "variantId": "var-keyboard-graphite",
+          "variantName": "Graphite",
+          "quantity": 1,
+          "unitPrice": 125000,
+          "unitCost": 86000,
+          "imageUrl": "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=1200&q=80"
+        },
+        {
+          "id": "order-item-1784020463689-2",
+          "productId": "prod-headset",
+          "productName": "Havit RGB Gaming Headset",
+          "variantId": "var-headset-black",
+          "variantName": "Black",
+          "quantity": 1,
+          "unitPrice": 42000,
+          "unitCost": 28000,
+          "imageUrl": "https://images.unsplash.com/photo-1612444530582-fc66183b16f7?auto=format&fit=crop&w=1200&q=80"
+        }
+      ]
+    },
+    {
       "id": "order-1783678820583",
       "orderNumber": "LS-260710005",
       "customerId": "c173c7a7-1002-48bd-a69d-40e8a656d35a",
