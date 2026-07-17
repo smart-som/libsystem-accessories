@@ -9,7 +9,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const session = await getSessionContext();
 
   if (!session.user || (session.role !== "admin" && session.role !== "staff")) {
-    redirect("/admin-login");
+    redirect("/libsystem-admin-secure-access-7k9m2x4q");
   }
 
   return (

@@ -30,7 +30,7 @@ export function AdminSignOutButton({ className }: { className?: string }) {
           }
 
           await fetch("/api/auth/session", { method: "DELETE" });
-          router.push("/admin-login");
+          router.push("/libsystem-admin-secure-access-7k9m2x4q");
           router.refresh();
         } finally {
           setIsSubmitting(false);
