@@ -71,7 +71,7 @@ Attach an admin subdomain such as `admin.example.com` to the same deployment, th
 ADMIN_HOSTNAME=admin.example.com
 ```
 
-When configured, production requests to `/admin` and `/admin-login` on other hostnames return a 404. Visiting the admin hostname root redirects to `/admin-login`. Localhost remains available during development.
+When configured, production requests to `/admin` and `/libsystem-admin-secure-access-7k9m2x4q` on other hostnames return a 404. Visiting the admin hostname root redirects to `/libsystem-admin-secure-access-7k9m2x4q`. Localhost remains available during development.
 
 ## 7. Configure deployment variables
 

@@ -5,7 +5,7 @@ function normalizeHostname(value: string | null) {
 }
 
 function isAdminPath(pathname: string) {
-  return pathname === "/admin-login" || pathname === "/admin" || pathname.startsWith("/admin/");
+  return pathname === "/libsystem-admin-secure-access-7k9m2x4q" || pathname === "/admin" || pathname.startsWith("/admin/");
 }
 
 export function proxy(request: NextRequest) {
@@ -27,7 +27,7 @@ export function proxy(request: NextRequest) {
 
   if (requestHostname === adminHostname && request.nextUrl.pathname === "/") {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/admin-login";
+    loginUrl.pathname = "/libsystem-admin-secure-access-7k9m2x4q";
     return NextResponse.redirect(loginUrl);
   }
 
@@ -35,5 +35,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/admin-login", "/admin/:path*"],
+  matcher: ["/", "/libsystem-admin-secure-access-7k9m2x4q", "/admin/:path*"],
 };
