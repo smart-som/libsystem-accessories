@@ -31,9 +31,6 @@ export default async function AccountPage() {
           </div>
           <h1 className="mt-6 font-display text-4xl font-semibold text-slate-900">{displayName}</h1>
           <p className="mt-3 text-sm text-slate-600">{displayEmail} - {displayPhone}</p>
-          <p className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-            Saved for the MVP: profile details, order history, and order tracking. Address book and wishlists can grow naturally from this base.
-          </p>
           <CustomerSignOutButton className="mt-6" />
         </Card>
 

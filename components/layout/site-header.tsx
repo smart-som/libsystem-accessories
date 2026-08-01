@@ -34,7 +34,6 @@ export function SiteHeader({
   isAuthenticated: boolean;
   syncWithFirebaseAuth: boolean;
 }) {
-  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [firebaseIsAuthenticated, setFirebaseIsAuthenticated] = useState<boolean | null>(null);
   const resolvedIsAuthenticated = firebaseIsAuthenticated ?? isAuthenticated;
@@ -80,18 +79,18 @@ export function SiteHeader({
     };
   }, [syncWithFirebaseAuth]);
 
-  const mobileLinks = [{ href: "/shop", label: "Search products" }, ...categoryLinks, ...accountNavLinks];
+  const mobileLinks = [{ href: "/shop#product-search", label: "Search products" }, ...categoryLinks, ...accountNavLinks];
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <Image src="/libsystem-logo.jpeg" alt="Libsystem Accessories logo" fill sizes="48px" className="object-cover" />
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8">
+        <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:h-12 sm:w-12 sm:rounded-2xl">
+            <Image src="/libsystem-logo.jpeg" alt="Libsystem Accessories logo" fill sizes="(min-width: 640px) 48px, 40px" className="object-cover" />
           </div>
-          <div>
-            <div className="font-display text-xl font-bold tracking-tight text-slate-900">Libsystem</div>
-            <div className="text-xs uppercase tracking-[0.3em] text-slate-500">Accessories</div>
+          <div className="min-w-0">
+            <div className="truncate font-display text-lg font-bold tracking-tight text-slate-900 sm:text-xl">Libsystem</div>
+            <div className="hidden text-xs uppercase tracking-[0.3em] text-slate-500 min-[390px]:block">Accessories</div>
           </div>
         </Link>
 
@@ -154,45 +153,36 @@ export function SiteHeader({
           </Link>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 lg:hidden">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
           <Link
-            href="/shop"
+            href="/shop#product-search"
             aria-label="Search products"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 sm:h-11 sm:w-11"
           >
             <Search className="h-5 w-5" />
           </Link>
-          <Link
-            href={accountHref}
-            aria-label={accountLabel}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700"
-          >
-            <User className="h-5 w-5" />
-          </Link>
-          <Link href="/cart" aria-label="Cart" className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700">
+          <Link href="/cart" aria-label="Cart" className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 sm:h-11 sm:w-11">
             <ShoppingBag className="h-5 w-5" />
             <span className="absolute -right-2 -top-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-900 px-1.5 text-[10px] font-bold text-white">
               {totalItems}
             </span>
           </Link>
-          <button
-            type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700"
-            onClick={() => setOpen((value) => !value)}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+          <details className="group relative">
+            <summary className="inline-flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 sm:h-11 sm:w-11 [&::-webkit-details-marker]:hidden">
+              <span className="sr-only">Open navigation</span>
+              <Menu className="h-5 w-5" />
+            </summary>
+            <div className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-72 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
+              <nav className="flex flex-col text-sm text-slate-700">
+                {mobileLinks.map((item) => (
+                  <Link key={`${item.href}-${item.label}`} href={item.href} className="rounded-xl px-3 py-3 transition hover:bg-slate-100">
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </details>
         </div>
-      </div>
-
-      <div className={cn("border-t border-slate-200 lg:hidden", open ? "block" : "hidden")}>
-        <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3 text-sm text-slate-600 sm:px-6">
-          {mobileLinks.map((item) => (
-            <Link key={`${item.href}-${item.label}`} href={item.href} className="rounded-2xl px-3 py-3 hover:bg-slate-100" onClick={() => setOpen(false)}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
       </div>
     </header>
   );

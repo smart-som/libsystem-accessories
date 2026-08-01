@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 
-import { DemoModeBanner } from "@/components/layout/demo-mode-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import type { Category } from "@/lib/types";
@@ -33,7 +32,6 @@ export function SiteShell({
 
   return (
     <>
-      <DemoModeBanner />
       <SiteHeader
         categories={categories}
         accountHref={accountHref}

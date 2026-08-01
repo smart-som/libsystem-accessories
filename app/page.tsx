@@ -19,12 +19,12 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-50">
             <div className="grid items-center gap-8 lg:grid-cols-[0.88fr,1.12fr]">
-              <div className="px-6 py-8 sm:px-8 lg:px-10 lg:py-12">
+              <div className="px-5 py-7 sm:px-8 sm:py-8 lg:px-10 lg:py-12">
                 <Badge>New in store</Badge>
-                <h1 className="mt-5 max-w-xl font-display text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                <h1 className="mt-4 max-w-xl font-display text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:mt-5 sm:text-5xl lg:text-6xl">
                   Shop everyday tech and home essentials in one clean storefront.
                 </h1>
-                <p className="mt-5 max-w-lg text-base leading-8 text-slate-600 sm:text-lg">
+                <p className="mt-4 max-w-lg text-sm leading-7 text-slate-600 sm:mt-5 sm:text-lg sm:leading-8">
                   Browse phone accessories, workstation gear, gaming picks, and compact appliances with clear pricing and a faster path to checkout.
                 </p>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
