@@ -4,7 +4,7 @@ import path from "path";
 import { readCatalogSnapshot, reserveInventoryForSale, writeCatalogSnapshot } from "@/lib/catalog-store";
 import { orders as demoOrders } from "@/lib/demo-data";
 import { normalizeOrderStatus } from "@/lib/order-status";
-import type { CheckoutPayload, Order, OrderStatus } from "@/lib/types";
+import type { CheckoutPayload, Order, OrderStatus, PaymentMethod } from "@/lib/types";
 
 type OrdersSnapshot = {
   orders: Order[];
@@ -81,6 +81,35 @@ export function createDemoOrderFromCheckout({
   shippingFee: number;
   customerId?: string;
 }) {
+  return createPaidOrderFromCheckout({
+    payload,
+    shippingFee,
+    customerId,
+    paymentReference: `DEMO-${Date.now()}`,
+    paymentMethod: "card",
+  }).order;
+}
+
+export function createPaidOrderFromCheckout({
+  payload,
+  shippingFee,
+  customerId,
+  paymentReference,
+  paymentMethod,
+}: {
+  payload: CheckoutPayload;
+  shippingFee: number;
+  customerId?: string;
+  paymentReference: string;
+  paymentMethod: PaymentMethod;
+}) {
+  const snapshot = readOrdersSnapshot();
+  const existingOrder = snapshot.orders.find((order) => order.paymentReference === paymentReference);
+
+  if (existingOrder) {
+    return { order: existingOrder, created: false };
+  }
+
   const catalogSnapshot = readCatalogSnapshot();
   const { snapshot: nextCatalogSnapshot, reservedLines } = reserveInventoryForSale(
     catalogSnapshot,
@@ -89,7 +118,6 @@ export function createDemoOrderFromCheckout({
       quantity: item.quantity,
     })),
   );
-  const snapshot = readOrdersSnapshot();
   const placedAt = new Date().toISOString();
   const items = reservedLines.map((line, index) => {
     return {
@@ -117,8 +145,8 @@ export function createDemoOrderFromCheckout({
     customerPhone: payload.customerPhone.trim(),
     status: "paid",
     channel: "online",
-    paymentMethod: "card",
-    paymentReference: `DEMO-${Date.now()}`,
+    paymentMethod,
+    paymentReference,
     fulfillmentMethod: payload.fulfillmentMethod,
     shippingZoneId: payload.shippingZoneId,
     shippingAddress: payload.shippingAddress,
@@ -133,5 +161,5 @@ export function createDemoOrderFromCheckout({
   writeCatalogSnapshot(nextCatalogSnapshot);
   writeOrdersSnapshot(snapshot);
 
-  return order;
+  return { order, created: true };
 }
