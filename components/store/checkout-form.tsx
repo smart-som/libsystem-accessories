@@ -56,25 +56,34 @@ export function CheckoutForm({ shippingZones, defaults, isSignedInCustomer = fal
       })),
     };
 
-    const response = await fetch("/api/paystack/initialize", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json()) as { message?: string; checkoutUrl?: string; demo?: boolean };
 
-    const result = (await response.json()) as { message: string; checkoutUrl?: string; demo?: boolean };
-    startTransition(() => {
-      setMessage(result.message);
-      if (result.demo) {
-        clearCart();
+      if (!response.ok) {
+        throw new Error(result.message || "Paystack checkout could not be started.");
       }
-      if (result.checkoutUrl) {
-        window.location.href = result.checkoutUrl;
-      }
-    });
-    setIsSubmitting(false);
+
+      startTransition(() => {
+        setMessage(result.message ?? "Redirecting to Paystack...");
+        if (result.demo) {
+          clearCart();
+        }
+        if (result.checkoutUrl) {
+          window.location.assign(result.checkoutUrl);
+        }
+      });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Paystack checkout could not be started.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -84,7 +93,7 @@ export function CheckoutForm({ shippingZones, defaults, isSignedInCustomer = fal
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Checkout</p>
           <h1 className="font-display text-4xl font-semibold text-slate-900">Fast, friendly checkout</h1>
           <p className="max-w-2xl text-sm leading-7 text-slate-600">
-            Complete your delivery or pickup details, then continue to Paystack. When payment is not configured yet, the form falls back to demo confirmation so the experience can still be reviewed.
+            Complete your delivery or pickup details, then continue to Paystack&apos;s secure hosted checkout.
           </p>
         </div>
 

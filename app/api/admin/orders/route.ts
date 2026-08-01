@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json({ message: "You are not allowed to manage orders." }, { status: 403 });
   }
 
-  return NextResponse.json(readOrdersSnapshot());
+  return NextResponse.json(await readOrdersSnapshot());
 }
 
 export async function PATCH(request: Request) {
@@ -46,7 +46,7 @@ export async function PATCH(request: Request) {
       throw new Error("That status is not allowed for this order.");
     }
 
-    const { order, snapshot } = updateOrderStatus(orderId, status);
+    const { order, snapshot } = await updateOrderStatus(orderId, status);
 
     return NextResponse.json({
       order,

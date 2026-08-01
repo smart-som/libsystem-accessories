@@ -1,56 +1,71 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-
 import { getSessionContext } from "@/lib/auth";
 import { env, isPaystackConfigured } from "@/lib/env";
-import { getProducts, getShippingZones } from "@/lib/catalog";
-import { createDemoOrderFromCheckout } from "@/lib/order-store";
-
-const checkoutSchema = z.object({
-  customerName: z.string().min(2),
-  customerEmail: z.string().email(),
-  customerPhone: z.string().min(7),
-  shippingAddress: z.string().optional(),
-  shippingZoneId: z.string().optional(),
-  fulfillmentMethod: z.enum(["delivery", "pickup"]),
-  createAccount: z.boolean(),
-  items: z.array(
-    z.object({
-      productId: z.string(),
-      variantId: z.string(),
-      quantity: z.number().int().positive(),
-    }),
-  ),
-});
+import { getShippingZones, getStorefrontProducts } from "@/lib/catalog";
+import { buildPaystackMetadata, checkoutSchema, createPaystackReference } from "@/lib/paystack";
 
 export async function POST(request: Request) {
-  const payload = checkoutSchema.parse(await request.json());
+  const parsedPayload = checkoutSchema.safeParse(await request.json());
+
+  if (!parsedPayload.success) {
+    return NextResponse.json({ message: parsedPayload.error.issues[0]?.message ?? "Invalid checkout details." }, { status: 400 });
+  }
+
+  const payload = parsedPayload.data;
   const session = await getSessionContext();
   const shippingFee =
     payload.fulfillmentMethod === "delivery"
       ? getShippingZones().find((zone) => zone.id === payload.shippingZoneId)?.fee ?? 0
       : 0;
-  const products = getProducts();
+  let products;
+
+  try {
+    products = await getStorefrontProducts({ requireInventory: true });
+  } catch {
+    return NextResponse.json(
+      { message: "Live inventory is temporarily unavailable. Please try checkout again shortly." },
+      { status: 503 },
+    );
+  }
+  let invalidItemMessage = "";
   const subtotal = payload.items.reduce((total, item) => {
     const product = products.find((entry) => entry.id === item.productId);
     const variant = product?.variants.find((entry) => entry.id === item.variantId);
-    return total + (variant?.price ?? 0) * item.quantity;
+
+    if (!product || !variant) {
+      invalidItemMessage = "One or more products are no longer available.";
+      return total;
+    }
+
+    if (variant.stockQuantity < item.quantity) {
+      invalidItemMessage = `Only ${variant.stockQuantity} unit(s) of ${product.name} are currently available.`;
+      return total;
+    }
+
+    return total + variant.price * item.quantity;
   }, 0);
   const amount = subtotal + shippingFee;
 
-  if (!isPaystackConfigured) {
-    const order = createDemoOrderFromCheckout({
-      payload,
-      shippingFee,
-      customerId: session.role === "customer" ? session.user?.id : undefined,
-    });
-
-    return NextResponse.json({
-      demo: true,
-      message: `Demo checkout complete for ${payload.customerName}. ${order.orderNumber} was added for ${amount.toLocaleString("en-NG")} NGN.`,
-    });
+  if (invalidItemMessage || amount <= 0) {
+    return NextResponse.json({ message: invalidItemMessage || "The order total must be greater than zero." }, { status: 400 });
   }
 
+  if (!isPaystackConfigured) {
+    return NextResponse.json({
+      message: "Paystack checkout is not configured. Add PAYSTACK_SECRET_KEY to the server environment and restart the app.",
+    }, { status: 503 });
+  }
+
+  const reference = createPaystackReference();
+  const amountKobo = Math.round(amount * 100);
+  const callbackUrl = new URL("/api/paystack/verify", env.appUrl || request.url);
+  const metadata = buildPaystackMetadata({
+    schemaVersion: 1,
+    checkout: payload,
+    shippingFee,
+    expectedAmountKobo: amountKobo,
+    customerId: session.role === "customer" ? session.user?.id : undefined,
+  });
   const response = await fetch("https://api.paystack.co/transaction/initialize", {
     method: "POST",
     headers: {
@@ -59,19 +74,21 @@ export async function POST(request: Request) {
     },
     body: JSON.stringify({
       email: payload.customerEmail,
-      amount: amount * 100,
-      callback_url: `${env.appUrl}/account/orders`,
-      metadata: payload,
+      amount: amountKobo,
+      currency: "NGN",
+      reference,
+      callback_url: callbackUrl.toString(),
+      metadata,
     }),
   });
 
   const result = (await response.json()) as {
     status: boolean;
     message: string;
-    data?: { authorization_url: string };
+    data?: { authorization_url: string; reference: string };
   };
 
-  if (!result.status || !result.data) {
+  if (!response.ok || !result.status || !result.data?.authorization_url) {
     return NextResponse.json({ message: result.message }, { status: 400 });
   }
 

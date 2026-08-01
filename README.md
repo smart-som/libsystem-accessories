@@ -32,11 +32,9 @@ Copy `.env.example` to `.env.local` and fill in:
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 - `FIREBASE_CLIENT_EMAIL`
 - `FIREBASE_PRIVATE_KEY`
-- `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`
 - `PAYSTACK_SECRET_KEY`
-- `NEXT_PUBLIC_APP_URL`
 
-If Firebase or Paystack values are missing, the app automatically falls back to demo mode instead of crashing.
+If Firebase values are missing, the app falls back to demo data instead of crashing. Checkout reports a clear configuration error when Paystack is missing. Hosted Paystack Checkout only needs the server-side `PAYSTACK_SECRET_KEY`; the public key is not exposed to the browser.
 
 ## Firebase
 
@@ -50,9 +48,14 @@ Suggested Firestore collections live in [lib/firebase/firestore.ts](/C:/Users/fm
 
 The previous SQL schema has been translated into a Firebase-oriented model outline in [firebase/firestore-model.md](/C:/Users/fmba3/OneDrive/Documents/lib/firebase/firestore-model.md).
 
+## Paystack
+
+- Set `PAYSTACK_SECRET_KEY=sk_test_...` locally and in the deployment environment. Replace it with `sk_live_...` when the Paystack account is ready for live transactions; no code change is required.
+- In the Paystack dashboard, set the webhook URL to `https://YOUR_DOMAIN/api/paystack/webhook` for test mode and again for live mode. The per-transaction callback URL is supplied automatically by the app.
+- Successful payments are verified server-side against Paystack, including the reference, NGN amount, and currency. The signed `charge.success` webhook is handled as a fallback, and fulfillment is idempotent by payment reference.
+- Never commit or expose `PAYSTACK_SECRET_KEY`. Rotate any key that appears in a screenshot, chat, log, or public location.
+
 ## Notes
 
-- Paystack initialization is scaffolded in `app/api/paystack/initialize/route.ts`
-- Payment verification and webhook expansion can be added on top of `app/api/paystack/verify/route.ts`
 - Current admin actions are UI-complete and demo-data backed; the next production step is replacing demo reads/writes with live Firestore reads/writes and server actions
 - Registering a user writes a starter profile document into Firestore when Firebase is configured

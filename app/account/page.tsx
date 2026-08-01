@@ -9,6 +9,8 @@ import { getCustomerOrders } from "@/lib/catalog";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { formatOrderStatus } from "@/lib/order-status";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountPage() {
   const session = await getSessionContext();
 
@@ -16,7 +18,7 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  const orders = getCustomerOrders(session.user.email ?? "");
+  const orders = await getCustomerOrders(session.user.email ?? "");
   const latestOrder = orders[0];
   const displayName = session.user.displayName ?? "Customer";
   const displayEmail = session.user.email ?? "customer@libsystem.local";
@@ -31,9 +33,6 @@ export default async function AccountPage() {
           </div>
           <h1 className="mt-6 font-display text-4xl font-semibold text-slate-900">{displayName}</h1>
           <p className="mt-3 text-sm text-slate-600">{displayEmail} - {displayPhone}</p>
-          <p className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-            Saved for the MVP: profile details, order history, and order tracking. Address book and wishlists can grow naturally from this base.
-          </p>
           <CustomerSignOutButton className="mt-6" />
         </Card>
 

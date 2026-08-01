@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SiteShell } from "@/components/layout/site-shell";
 import { CartProvider } from "@/components/providers/cart-provider";
 import { getSessionContext } from "@/lib/auth";
-import { getNavigationCatalog } from "@/lib/catalog";
+import { getStorefrontNavigationCatalog } from "@/lib/catalog";
 import { isFirebaseAdminConfigured, isFirebaseConfigured } from "@/lib/env";
 
 import "./globals.css";
@@ -20,7 +20,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSessionContext();
-  const { categories, products } = getNavigationCatalog();
+  const { categories, products } = await getStorefrontNavigationCatalog();
   const isStaffUser = session.user && (session.role === "admin" || session.role === "staff");
   const isCustomerUser = session.user && session.role === "customer";
   const accountHref = isStaffUser ? "/admin" : isCustomerUser ? "/account" : "/login";

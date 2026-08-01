@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useSyncExternalStore } from "react";
 
 import type { Product, ProductVariant } from "@/lib/types";
 
@@ -24,12 +24,89 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "libsystem-cart";
+const CART_CHANGED_EVENT = "libsystem-cart-changed";
 
 type StoredCartItem = {
   productId: string;
   variantId: string;
   quantity: number;
 };
+
+const EMPTY_CART: StoredCartItem[] = [];
+let cachedRawCart: string | null | undefined;
+let cachedCart: StoredCartItem[] = EMPTY_CART;
+
+function parseStoredCart(raw: string | null): StoredCartItem[] {
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const value: unknown = JSON.parse(raw);
+
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value.filter(
+      (item): item is StoredCartItem =>
+        typeof item === "object" &&
+        item !== null &&
+        "productId" in item &&
+        typeof item.productId === "string" &&
+        "variantId" in item &&
+        typeof item.variantId === "string" &&
+        "quantity" in item &&
+        typeof item.quantity === "number" &&
+        Number.isInteger(item.quantity) &&
+        item.quantity > 0,
+    );
+  } catch {
+    return [];
+  }
+}
+
+function getServerCartSnapshot() {
+  return EMPTY_CART;
+}
+
+function getCartSnapshot() {
+  const raw = window.localStorage.getItem(STORAGE_KEY);
+
+  if (raw !== cachedRawCart) {
+    cachedRawCart = raw;
+    cachedCart = parseStoredCart(raw);
+  }
+
+  return cachedCart;
+}
+
+function subscribeToCart(onStoreChange: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY) {
+      onStoreChange();
+    }
+  };
+  const handleLocalChange = () => onStoreChange();
+
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(CART_CHANGED_EVENT, handleLocalChange);
+
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(CART_CHANGED_EVENT, handleLocalChange);
+  };
+}
+
+function updateStoredCart(update: (current: StoredCartItem[]) => StoredCartItem[]) {
+  const nextCart = update(getCartSnapshot());
+  const raw = JSON.stringify(nextCart);
+
+  cachedRawCart = raw;
+  cachedCart = nextCart;
+  window.localStorage.setItem(STORAGE_KEY, raw);
+  window.dispatchEvent(new Event(CART_CHANGED_EVENT));
+}
 
 export function CartProvider({
   children,
@@ -38,27 +115,7 @@ export function CartProvider({
   children: React.ReactNode;
   products: Product[];
 }) {
-  const [storedItems, setStoredItems] = useState<StoredCartItem[]>(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
-
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(raw) as StoredCartItem[];
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storedItems));
-  }, [storedItems]);
+  const storedItems = useSyncExternalStore(subscribeToCart, getCartSnapshot, getServerCartSnapshot);
 
   const items = storedItems
     .map((item) => {
@@ -84,7 +141,7 @@ export function CartProvider({
     totalItems,
     subtotal,
     addItem(productId, variantId, quantity = 1) {
-      setStoredItems((current) => {
+      updateStoredCart((current) => {
         const existing = current.find((item) => item.variantId === variantId);
         if (existing) {
           return current.map((item) =>
@@ -96,17 +153,17 @@ export function CartProvider({
       });
     },
     updateQuantity(variantId, quantity) {
-      setStoredItems((current) =>
+      updateStoredCart((current) =>
         current
           .map((item) => (item.variantId === variantId ? { ...item, quantity } : item))
           .filter((item) => item.quantity > 0),
       );
     },
     removeItem(variantId) {
-      setStoredItems((current) => current.filter((item) => item.variantId !== variantId));
+      updateStoredCart((current) => current.filter((item) => item.variantId !== variantId));
     },
     clearCart() {
-      setStoredItems([]);
+      updateStoredCart(() => []);
     },
   };
 

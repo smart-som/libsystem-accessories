@@ -1,4 +1,5 @@
 export const env = {
+  appUrl: process.env.NEXT_PUBLIC_APP_URL,
   firebaseApiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   firebaseAuthDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   firebaseProjectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -8,9 +9,7 @@ export const env = {
   firebaseMeasurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
   firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   firebasePrivateKey: process.env.FIREBASE_PRIVATE_KEY,
-  paystackPublicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
   paystackSecretKey: process.env.PAYSTACK_SECRET_KEY,
-  appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   adminHostname: process.env.ADMIN_HOSTNAME,
 };
 
@@ -27,4 +26,5 @@ export const isFirebaseAdminConfigured = Boolean(
   env.firebaseProjectId && env.firebaseClientEmail && env.firebasePrivateKey,
 );
 
-export const isPaystackConfigured = Boolean(env.paystackPublicKey && env.paystackSecretKey);
+// Hosted Paystack Checkout is initialized server-side, so only the secret key is required.
+export const isPaystackConfigured = Boolean(env.paystackSecretKey);

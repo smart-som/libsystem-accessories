@@ -4,8 +4,8 @@ import { Card } from "@/components/ui/card";
 import { getStoreContext } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
 
-export default function AdminDashboardPage() {
-  const store = getStoreContext();
+export default async function AdminDashboardPage() {
+  const store = await getStoreContext();
 
   return (
     <div className="space-y-6">

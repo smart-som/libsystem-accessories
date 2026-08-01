@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({ message: "You are not allowed to export sales." }, { status: 403 });
   }
 
-  const csv = buildSalesCsv(getSalesRecords(getOrders(), getWalkInSales()));
+  const csv = buildSalesCsv(getSalesRecords(await getOrders(), getWalkInSales()));
 
   return new NextResponse(csv, {
     status: 200,

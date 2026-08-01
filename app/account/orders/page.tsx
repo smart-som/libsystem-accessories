@@ -6,6 +6,8 @@ import { getCustomerOrders } from "@/lib/catalog";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { formatFulfillmentLabel, formatOrderStatus } from "@/lib/order-status";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountOrdersPage() {
   const session = await getSessionContext();
 
@@ -13,7 +15,7 @@ export default async function AccountOrdersPage() {
     redirect("/login");
   }
 
-  const orders = getCustomerOrders(session.user.email ?? "");
+  const orders = await getCustomerOrders(session.user.email ?? "");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
