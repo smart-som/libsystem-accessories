@@ -7,7 +7,7 @@ import { AddToCartButton } from "@/components/store/add-to-cart-button";
 import { ProductCard } from "@/components/store/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { getProductBySlug, getRelatedProducts, getShippingZones } from "@/lib/catalog";
+import { getShippingZones, getStorefrontProducts } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
 
 export default async function ProductPage({
@@ -16,14 +16,17 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const products = await getStorefrontProducts();
+  const product = products.find((entry) => entry.slug === slug);
 
   if (!product) {
     notFound();
   }
 
   const shippingZones = getShippingZones();
-  const relatedProducts = getRelatedProducts(product.categoryId, product.id);
+  const relatedProducts = products
+    .filter((entry) => entry.categoryId === product.categoryId && entry.id !== product.id)
+    .slice(0, 4);
   const defaultVariant = product.variants[0];
 
   return (

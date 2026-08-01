@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { fulfillPaystackTransaction } from "@/lib/paystack";
+import { fulfillPaystackTransaction, PaystackOrderFulfillmentError } from "@/lib/paystack";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    destination.searchParams.set("payment", "failed");
+    destination.searchParams.set("payment", error instanceof PaystackOrderFulfillmentError ? "processing" : "failed");
     destination.searchParams.set("reference", reference);
   }
 

@@ -8,6 +8,7 @@ export const firestoreCollections = {
   shippingZones: "shippingZones",
   orders: "orders",
   payments: "payments",
+  inventory: "inventory",
   walkInSales: "walkInSales",
   inventoryMovements: "inventoryMovements",
 } as const;

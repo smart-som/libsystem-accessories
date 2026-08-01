@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionContext } from "@/lib/auth";
 import { env, isPaystackConfigured } from "@/lib/env";
-import { getProducts, getShippingZones } from "@/lib/catalog";
+import { getShippingZones, getStorefrontProducts } from "@/lib/catalog";
 import { buildPaystackMetadata, checkoutSchema, createPaystackReference } from "@/lib/paystack";
 
 export async function POST(request: Request) {
@@ -17,7 +17,16 @@ export async function POST(request: Request) {
     payload.fulfillmentMethod === "delivery"
       ? getShippingZones().find((zone) => zone.id === payload.shippingZoneId)?.fee ?? 0
       : 0;
-  const products = getProducts();
+  let products;
+
+  try {
+    products = await getStorefrontProducts({ requireInventory: true });
+  } catch {
+    return NextResponse.json(
+      { message: "Live inventory is temporarily unavailable. Please try checkout again shortly." },
+      { status: 503 },
+    );
+  }
   let invalidItemMessage = "";
   const subtotal = payload.items.reduce((total, item) => {
     const product = products.find((entry) => entry.id === item.productId);
@@ -49,7 +58,7 @@ export async function POST(request: Request) {
 
   const reference = createPaystackReference();
   const amountKobo = Math.round(amount * 100);
-  const callbackUrl = new URL("/api/paystack/verify", request.url);
+  const callbackUrl = new URL("/api/paystack/verify", env.appUrl || request.url);
   const metadata = buildPaystackMetadata({
     schemaVersion: 1,
     checkout: payload,

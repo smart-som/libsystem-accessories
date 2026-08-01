@@ -1,4 +1,4 @@
-import { getBrands, getCategories, getProducts } from "@/lib/catalog";
+import { getBrands, getCategories, getStorefrontProducts } from "@/lib/catalog";
 import { ShopCatalogClient } from "@/components/store/shop-catalog-client";
 
 export default async function ShopPage({
@@ -19,7 +19,7 @@ export default async function ShopPage({
       </div>
       <ShopCatalogClient
         key={`${params.category ?? "all"}:${params.brand ?? "all"}:${params.price ?? "all"}:${params.query ?? ""}`}
-        products={getProducts()}
+        products={await getStorefrontProducts()}
         categories={getCategories()}
         brands={getBrands()}
         initialCategory={params.category ?? "all"}

@@ -5,13 +5,16 @@ import { ProductCard } from "@/components/store/product-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getStoreContext } from "@/lib/catalog";
+import { getStorefrontProducts } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export default function HomePage() {
-  const store = getStoreContext();
-  const heroSpotlight = store.featuredProducts[0] ?? store.products[0];
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const products = await getStorefrontProducts();
+  const featuredProducts = products.filter((product) => product.featured);
+  const heroSpotlight = featuredProducts[0] ?? products[0];
 
   return (
     <div className="pb-16">
@@ -69,7 +72,7 @@ export default function HomePage() {
           </p>
         </div>
         <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {store.featuredProducts.slice(0, 4).map((product) => (
+          {featuredProducts.slice(0, 4).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

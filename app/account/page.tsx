@@ -9,6 +9,8 @@ import { getCustomerOrders } from "@/lib/catalog";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { formatOrderStatus } from "@/lib/order-status";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountPage() {
   const session = await getSessionContext();
 
@@ -16,7 +18,7 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  const orders = getCustomerOrders(session.user.email ?? "");
+  const orders = await getCustomerOrders(session.user.email ?? "");
   const latestOrder = orders[0];
   const displayName = session.user.displayName ?? "Customer";
   const displayEmail = session.user.email ?? "customer@libsystem.local";

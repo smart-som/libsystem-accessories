@@ -5,6 +5,8 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { getSessionContext } from "@/lib/auth";
 import { getOrders } from "@/lib/catalog";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await getSessionContext();
 
@@ -17,7 +19,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       userEmail={session.user.email ?? "admin@libsystem.local"}
       userName={session.user.displayName ?? session.user.email ?? "Admin"}
       role={session.role}
-      initialOrders={getOrders()}
+      initialOrders={await getOrders()}
     >
       {children}
     </AdminShell>

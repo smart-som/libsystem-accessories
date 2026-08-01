@@ -5,6 +5,7 @@
 /.next
 /out
 /public/uploads
+/data/orders.json
 
 # environment files (may contain credentials)
 .env

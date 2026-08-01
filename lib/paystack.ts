@@ -36,6 +36,18 @@ export const checkoutSchema = z
         message: "A delivery zone and address are required for delivery.",
       });
     }
+
+    const variantIds = new Set<string>();
+    value.items.forEach((item, index) => {
+      if (variantIds.has(item.variantId)) {
+        context.addIssue({
+          code: "custom",
+          path: ["items", index, "variantId"],
+          message: "Each product variant can appear only once per checkout.",
+        });
+      }
+      variantIds.add(item.variantId);
+    });
   });
 
 const paystackMetadataSchema = z.object({
@@ -61,6 +73,13 @@ const verifiedTransactionSchema = z.object({
 });
 
 export type PaystackCheckoutMetadata = z.infer<typeof paystackMetadataSchema>;
+
+export class PaystackOrderFulfillmentError extends Error {
+  constructor(cause: unknown) {
+    super("Payment was verified, but the order could not be recorded yet.", { cause });
+    this.name = "PaystackOrderFulfillmentError";
+  }
+}
 
 export function createPaystackReference() {
   return `LS-${Date.now()}-${randomBytes(6).toString("hex")}`;
@@ -164,13 +183,25 @@ export async function fulfillPaystackTransaction(reference: string) {
     throw new Error("The verified payment amount or currency does not match the order.");
   }
 
-  return createPaidOrderFromCheckout({
-    payload: metadata.checkout,
-    shippingFee: metadata.shippingFee,
-    customerId: metadata.customerId,
-    paymentReference: transaction.reference,
-    paymentMethod: getPaymentMethod(transaction.channel),
-  });
+  try {
+    const result = await createPaidOrderFromCheckout({
+      payload: metadata.checkout,
+      shippingFee: metadata.shippingFee,
+      customerId: metadata.customerId,
+      paymentReference: transaction.reference,
+      paymentMethod: getPaymentMethod(transaction.channel),
+    });
+
+    console.info("[paystack/fulfill] Paid order recorded.", {
+      reference: transaction.reference,
+      orderNumber: result.order.orderNumber,
+      created: result.created,
+    });
+
+    return result;
+  } catch (error) {
+    throw new PaystackOrderFulfillmentError(error);
+  }
 }
 
 export function hasValidPaystackSignature(rawBody: string, signature: string | null) {

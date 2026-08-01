@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleX } from "lucide-react";
+import { CheckCircle2, CircleEllipsis, CircleX } from "lucide-react";
 import Link from "next/link";
 
 import { PaymentCompleteClient } from "@/components/store/payment-complete-client";
@@ -11,26 +11,40 @@ export default async function CheckoutCompletePage({
 }) {
   const params = await searchParams;
   const succeeded = params.payment === "success";
+  const processing = params.payment === "processing";
+  const paymentReceived = succeeded || processing;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      {succeeded ? <PaymentCompleteClient /> : null}
+      {paymentReceived ? <PaymentCompleteClient /> : null}
       <Card className="text-center">
         <div
           className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
-            succeeded ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+            succeeded
+              ? "bg-emerald-50 text-emerald-600"
+              : processing
+                ? "bg-amber-50 text-amber-600"
+                : "bg-rose-50 text-rose-600"
           }`}
         >
-          {succeeded ? <CheckCircle2 className="h-8 w-8" /> : <CircleX className="h-8 w-8" />}
+          {succeeded ? (
+            <CheckCircle2 className="h-8 w-8" />
+          ) : processing ? (
+            <CircleEllipsis className="h-8 w-8" />
+          ) : (
+            <CircleX className="h-8 w-8" />
+          )}
         </div>
         <p className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-500">Payment status</p>
         <h1 className="mt-3 font-display text-4xl font-semibold text-slate-900">
-          {succeeded ? "Payment confirmed" : "Payment not confirmed"}
+          {succeeded ? "Payment confirmed" : processing ? "Payment received" : "Payment not confirmed"}
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-600">
           {succeeded
             ? `Your order${params.order ? ` ${params.order}` : ""} has been paid and recorded successfully.`
-            : "We could not confirm this payment. If your account was debited, keep the reference below and contact support before trying again."}
+            : processing
+              ? "Your payment is confirmed. We are still recording the order, so please keep the reference below and do not pay again."
+              : "We could not confirm this payment. If your account was debited, keep the reference below and contact support before trying again."}
         </p>
 
         {params.reference ? (
