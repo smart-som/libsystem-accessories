@@ -81,7 +81,7 @@ export function WalkInSalesPanel({ products: initialProducts, sales: initialSale
   return (
     <div className="grid gap-6 xl:grid-cols-[0.85fr,1.15fr]">
       <Card className="rounded-none border-[color:var(--admin-border)] bg-[var(--admin-panel)] text-[var(--admin-text)] shadow-[var(--admin-shadow)]">
-        <p className="text-xs uppercase tracking-[0.3em] text-[var(--admin-subtle)]">Staff tool</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-[var(--admin-subtle)]">Sales tool</p>
         <h2 className="mt-3 font-display text-2xl font-semibold text-[var(--admin-text)]">Record walk-in sale</h2>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--admin-muted)]">
           Each saved walk-in sale now deducts stock from catalog inventory immediately, so product availability and sales reporting stay aligned.

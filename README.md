@@ -5,7 +5,7 @@ Nigeria-first ecommerce MVP built with `Next.js`, `TypeScript`, `Tailwind CSS`, 
 ## Included
 
 - Customer storefront with product discovery, product detail, cart, checkout, account, and order history screens
-- Admin dashboard with KPI cards, sales charts, product management UI, walk-in sales recording UI, analytics, and staff management pages
+- Admin dashboard with KPI cards, sales charts, product management UI, walk-in sales recording UI, and analytics
 - Demo-mode data layer so the app runs without Firebase during UI review
 - Firebase Auth session wiring plus Firestore collection scaffolding for production wiring
 

@@ -24,7 +24,7 @@ export function AdminLoginCard({ isEnabled }: AdminLoginCardProps) {
       <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admin access</p>
       <h1 className="mt-4 font-display text-4xl font-semibold text-slate-900">Sign in to the dashboard</h1>
       <p className="mt-4 text-sm leading-7 text-slate-600">
-        Sign in with an authorized Firebase admin account to manage products, orders, staff, and sales.
+        Sign in with an authorized Firebase admin account to manage products, orders, and sales.
       </p>
 
       {!isEnabled ? (

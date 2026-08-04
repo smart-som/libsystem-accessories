@@ -15,7 +15,6 @@ import {
   Settings2,
   ShoppingBag,
   Sun,
-  Users,
   X,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -40,7 +39,6 @@ const navItems = [
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/walk-in-sales', label: 'Walk-in sales', icon: CreditCard },
   { href: '/admin/analytics', label: 'Analytics', icon: ChartColumn },
-  { href: '/admin/staff', label: 'Staff', icon: Users },
 ];
 
 const utilityItems = [
@@ -56,7 +54,6 @@ const routeTitles: Record<string, string> = {
   '/admin/products': 'Products',
   '/admin/walk-in-sales': 'Walk-in sales',
   '/admin/analytics': 'Analytics',
-  '/admin/staff': 'Staff',
 };
 
 function getInitials(value: string) {
